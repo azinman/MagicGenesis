@@ -2,8 +2,20 @@
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
+## macOS
+.DS_Store
+
 ## User settings
 xcuserdata/
+*.xcuserstate
+*.perspectivev3
+*.mode1v3
+*.mode2v3
+*.pbxuser
+
+## Xcode build & derived data
+build/
+DerivedData/
 
 ## Obj-C/Swift specific
 *.hmap
@@ -30,6 +42,8 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+.swiftpm/
+Package.resolved
 
 # CocoaPods
 #
