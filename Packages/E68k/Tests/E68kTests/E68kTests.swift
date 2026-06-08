@@ -14,7 +14,7 @@ import Testing
 
 @Test("Verify basic memory read/write")
 func basicMemoryReadWrite() {
-    let ram = RAM(memoryCapacity: 64)
+    let ram = BigEndianMemory(memoryCapacity: 64)
     
     // It's zero'd out
     #expect(ram.readInt8(address: 4) == 0)
@@ -90,4 +90,38 @@ func statusWordConversion() {
     #expect(r.status == word)
     #expect(r.ccr.asByte == 0b00001010)
     #expect(r.system.asByte == 0b10100010)
+}
+
+@Test("Interrupt set/get with levels")
+func interruptLevels() {
+    let s = SystemByte()
+    #expect(s.interruptLevel == 0)
+    s.interrupt0 = true
+    #expect(s.interruptLevel == 1)
+    s.interrupt1 = true
+    #expect(s.interruptLevel == 3)
+    s.interrupt2 = true
+    #expect(s.interruptLevel == 7)
+    s.i1 = false
+    #expect(s.interruptLevel == 5)
+    s.i2 = false
+    #expect(s.interruptLevel == 1)
+    s.i0 = false
+    #expect(s.interruptLevel == 0)
+}
+
+@Test("Test machine reset")
+func machineReset() {
+    let m = E68k(memoryCapacity: 32)
+    #expect(m.registers.ssp == 0)
+    #expect(m.registers.pc == 0)
+    #expect(m.registers.system.interruptLevel == 0)
+
+    m.ram.writeUInt32(address: 0, value: 0xDEADBEEF)
+    m.ram.writeUInt32(address: 4, value: 0xCAFEBABE)
+    m.reset()
+
+    #expect(m.registers.ssp == 0xDEADBEEF)
+    #expect(m.registers.pc == 0xCAFEBABE)
+    #expect(m.registers.system.interruptLevel == 7)
 }

@@ -46,4 +46,14 @@ public class Registers: Codable {
         }
     }
     public var a7: UInt32 { sp }
+    
+    public func reset() {
+        data = ContiguousArray(repeating: 0, count: data.count)
+        addresses = ContiguousArray(repeating: 0, count: addresses.count)
+        pc = 0
+        ccr.reset()
+        system.reset()
+        usp = 0
+        ssp = 0
+    }
 }

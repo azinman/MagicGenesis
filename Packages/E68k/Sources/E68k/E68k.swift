@@ -7,33 +7,30 @@
 
 import Foundation
 
-public typealias Bytes = Int
-
-public typealias BigEndianInt32 = Int32
-public typealias BigEndianUInt32 = UInt32
-public typealias BigEndianInt16 = Int16
-public typealias BigEndianUInt16 = UInt16
-public typealias BigEndianInt8 = Int8
-public typealias BigEndianUInt8 = UInt8
-
-public typealias HostInt32 = Int32
-public typealias HostUInt32 = UInt32
-public typealias HostInt16 = Int16
-public typealias HostUInt16 = UInt16
-public typealias HostInt8 = Int8
-public typealias HostUInt8 = UInt8
-
-
 public class E68k: Codable {
     public var registers: Registers
-    public var ram: RAM
+    public var ram: BigEndianMemory
+    public var memoryCapacity: Bytes
     
     public convenience init(memoryCapacity: Bytes) {
-        self.init(registers: Registers(), ram: RAM(memoryCapacity: memoryCapacity))
+        self.init(registers: Registers(),
+                  ram: BigEndianMemory(memoryCapacity: memoryCapacity),
+                  memoryCapacity: memoryCapacity)
     }
     
-    public init(registers: Registers, ram: RAM) {
+    public init(registers: Registers,
+                ram: BigEndianMemory,
+                memoryCapacity: Bytes) {
         self.registers = registers
         self.ram = ram
+        self.memoryCapacity = memoryCapacity
+    }
+    
+    public func reset() {
+        registers = Registers()
+        registers.ssp = ram.readUInt32(address: 0)
+        registers.pc = ram.readUInt32(address: 4)
+        registers.supervisorMode = .supervisor
+        registers.system.interruptLevel = 7
     }
 }

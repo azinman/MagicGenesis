@@ -1,16 +1,20 @@
 //
-//  RAM.swift
+//  Memory.swift
 //  E68k
 //
 //  Created by Aaron Zinman on 6/6/26.
 //
 
 
-public final class RAM: Codable {
+public final class BigEndianMemory: Codable {
     private var memory: ContiguousArray<UInt8>
     
     public init(memoryCapacity: Bytes) {
         self.memory = ContiguousArray(repeating: 0, count: memoryCapacity)
+    }
+    
+    public func reset() {
+        self.memory.resetBytes(in: 0..<self.memory.count)
     }
     
     public func readUInt8(address: Int) -> HostUInt8 {

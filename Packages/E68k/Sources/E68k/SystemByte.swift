@@ -28,11 +28,21 @@ public class SystemByte: Codable, Equatable {
     public var supervisor: Bool = false
     public var trace: Bool = false
 
-    public var i0: Bool { interrupt0 }
-    public var i1: Bool { interrupt1 }
-    public var i2: Bool { interrupt2 }
-    public var s: Bool { supervisor }
-    public var t: Bool { trace }
+    public var i0: Bool {
+        get { interrupt0 } set { interrupt0 = newValue }
+    }
+    public var i1: Bool {
+        get { interrupt1 } set { interrupt1 = newValue }
+    }
+    public var i2: Bool {
+        get { interrupt2 } set { interrupt2 = newValue }
+    }
+    public var s: Bool {
+        get { supervisor } set { supervisor = newValue }
+    }
+    public var t: Bool {
+        get { trace } set { trace = newValue }
+    }
 
     public init() {}
     
@@ -76,5 +86,24 @@ public class SystemByte: Codable, Equatable {
     
     public var asByte: UInt8 {
         return UInt8(truncatingIfNeeded: asWord >> 8)
+    }
+    
+    public var interruptLevel: UInt8 {
+        get {
+            var value: UInt8 = 0
+            if i0 { value |= 1 << 0 }
+            if i1 { value |= 1 << 1 }
+            if i2 { value |= 1 << 2 }
+            return value
+        }
+        set {
+            if newValue > 7 {
+                preconditionFailure("Cannot set interrupt higher than 7")
+            }
+
+            if ((newValue & (1 << 0)) != 0) { i0 = true }
+            if ((newValue & (1 << 1)) != 0) { i1 = true }
+            if ((newValue & (1 << 2)) != 0) { i2 = true }
+        }
     }
 }
