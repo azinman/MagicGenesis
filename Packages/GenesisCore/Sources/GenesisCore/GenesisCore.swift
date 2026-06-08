@@ -17,6 +17,7 @@ public class GenesisCore {
     }
     
     public convenience init() {
-        self.init(cpu: E68k())
+        // Sega Genesis has 64 KiB RAM aka 65,536 bytes aka 0x10000
+        self.init(cpu: E68k(memoryCapacity: 0x10000))
     }
 }

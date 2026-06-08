@@ -9,5 +9,5 @@ import Testing
 @testable import GenesisCore
 
 @Test func canCreateCore() {
-    let machine = GenesisCore()
+    let _ = GenesisCore()
 }

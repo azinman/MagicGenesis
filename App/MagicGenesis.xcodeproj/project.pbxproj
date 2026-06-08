@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		9359DA5E2FD4C783009534F7 /* GenesisCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9359DA5D2FD4C783009534F7 /* GenesisCore */; };
+		9359DA612FD4E6E0009534F7 /* GenesisCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9359DA602FD4E6E0009534F7 /* GenesisCore */; };
+		9359DA632FD4E6E4009534F7 /* GenesisCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9359DA622FD4E6E4009534F7 /* GenesisCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9359DA612FD4E6E0009534F7 /* GenesisCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9359DA632FD4E6E4009534F7 /* GenesisCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +87,7 @@
 				9359DA282FD4C53B009534F7 /* MagicGenesis */,
 				9359DA362FD4C53B009534F7 /* MagicGenesisTests */,
 				9359DA402FD4C53B009534F7 /* MagicGenesisUITests */,
+				9359DA5F2FD4E6E0009534F7 /* Frameworks */,
 				9359DA272FD4C53B009534F7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -95,6 +100,13 @@
 				9359DA3D2FD4C53B009534F7 /* MagicGenesisUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9359DA5F2FD4E6E0009534F7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,6 +153,7 @@
 			);
 			name = MagicGenesisTests;
 			packageProductDependencies = (
+				9359DA602FD4E6E0009534F7 /* GenesisCore */,
 			);
 			productName = MagicGenesisTests;
 			productReference = 9359DA332FD4C53B009534F7 /* MagicGenesisTests.xctest */;
@@ -164,6 +177,7 @@
 			);
 			name = MagicGenesisUITests;
 			packageProductDependencies = (
+				9359DA622FD4E6E4009534F7 /* GenesisCore */,
 			);
 			productName = MagicGenesisUITests;
 			productReference = 9359DA3D2FD4C53B009534F7 /* MagicGenesisUITests.xctest */;
@@ -635,6 +649,16 @@
 /* Begin XCSwiftPackageProductDependency section */
 		9359DA5D2FD4C783009534F7 /* GenesisCore */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = GenesisCore;
+		};
+		9359DA602FD4E6E0009534F7 /* GenesisCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9359DA5C2FD4C783009534F7 /* XCLocalSwiftPackageReference "../Packages/GenesisCore" */;
+			productName = GenesisCore;
+		};
+		9359DA622FD4E6E4009534F7 /* GenesisCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9359DA5C2FD4C783009534F7 /* XCLocalSwiftPackageReference "../Packages/GenesisCore" */;
 			productName = GenesisCore;
 		};
 /* End XCSwiftPackageProductDependency section */
