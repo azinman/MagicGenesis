@@ -44,7 +44,7 @@ public class E68k: Codable {
 
     public func cycle() {
         let operationWord = UInt16(truncatingIfNeeded: registers.pc)
-        registers.pc += 1
+        registers.pc += 2
 
         let instruction = decode(operationWord: operationWord)
         execute(instruction: instruction)
