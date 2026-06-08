@@ -1,0 +1,27 @@
+{
+	"name": "Add Decimal with Extend",
+	"syntax": [
+		"Dy,Dx",
+		"-(Ay),-(Ax)"
+	],
+	"attributes": {
+		"Rx": "registerRx",
+		"M": "rM",
+		"Ry": "registerRy"
+	},
+	"ccr": "*U*U*",
+	"format": "1100Rx-10000MRy-",
+	"note": "Normally, the Z condition code bit is set via programming before the start of an operation. This allows successful tests for zero results upon completion of multiple-precision operations.",
+	"fields_custom_note": [
+		"Register Rx field—Specifies the destination register.",
+        "If R/M = 0, specifies a data register.",
+		"If R/M = 1, specifies an address register for the predecrement addressing mode.",
+		"R/M field—Specifies the operand addressing mode.",
+		"0 — The operation is data register to data register.",
+		"1 — The operation is memory to memory.",
+		"Register Ry field—Specifies the source register.",
+		"If R/M = 0, specifies a data register.",
+		"If R/M = 1, specifies an address register for the predecrement addressing mode."
+	],
+	"custom_parse": true
+}

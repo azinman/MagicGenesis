@@ -138,24 +138,68 @@ enum OperandSize {
     case long
 }
 
+enum ConditionCode: UInt8 {
+    /// Branch carry clear
+    case cc = 0b0100
+    /// Branch carry set
+    case cs = 0b0101
+    /// Branch equal
+    case eq = 0b0111
+    /// Branch greater or equal
+    case ge = 0b1100
+    /// Branch greater than
+    case gt = 0b1110
+    /// Branch high
+    case hi = 0b0010
+    /// Branch less or equal
+    case le = 0b1111
+    /// Branch less or same
+    case ls = 0b0011
+    /// Branch less than
+    case lt = 0b1101
+    /// Branch minus
+    case mi = 0b1011
+    /// Branch not equal
+    case ne = 0b0110
+    /// Branch plus
+    case pl = 0b1010
+    /// Branch overflow clear
+    case vc = 0b1000
+    /// Branch overflow set
+    case vs = 0b1001
+}
+
 enum Opcode {
     case nop
+    case move(size: OperandSize, sourceEaMode: EffectiveAddressMode, destinationEaMode: EffectiveAddressMode)
     case movq(immediate: UInt8, destinationDataRegister: UInt8)
     case addq(immediate: UInt8, eaMode: EffectiveAddressMode)
     case subq(immediate: UInt8, eaMode: EffectiveAddressMode)
-    case bra8(displacement8: Int8)
-    case braExtension
-    case bsr
-    case move(size: OperandSize, sourceEaMode: EffectiveAddressMode, destinationEaMode: EffectiveAddressMode)
+    // Branching
+    /// If displacement8 == nil, 16-bit displacement follows this opcode
+    case bra(displacement8: Int8?)
+    /// If displacement8 == nil, 16-bit displacement follows this opcode
+    case bsr(displacement8: Int8?)
+    /// If displacement8 == nil, 16-bit displacement follows this opcode
+    case bcc(condition: ConditionCode, displacement8: Int8?)
+
+    case lea(sourceEaMode: EffectiveAddressMode, destinationAddressRegister: UInt8)
+    case jmp(sourceEaMode: EffectiveAddressMode)
+    case jsr(sourceEaMode: EffectiveAddressMode)
+    case clr
+    case neg
+    case not
+    case tst
+    case movem
 
     init?(rawValue: UInt16) {
         let line = (rawValue >> 12) & 0b1111
         switch line {
         case 0x0:
             // Bit manipulation / MOVEP / immediate (ANDI, ORI, ADDI, …)
-            break
+            preconditionFailure("Not implemented yet")
         case 0x1, 0x2, 0x3:
-//            MOVE(A).B/L/W
+            // MOVE(A).B/L/W
             let sourceEaRawValue = UInt8(truncatingIfNeeded: rawValue & 0b1111)
             let destEaRawValue = UInt8(truncatingIfNeeded: (rawValue >> 6) & 0b1111)
             let sourceEaMode = EffectiveAddressMode(sourceEaField: sourceEaRawValue)
@@ -169,45 +213,106 @@ enum Opcode {
             self = .move(size: size, sourceEaMode: sourceEaMode, destinationEaMode: destEaMode)
         case 0x4:
             // Miscellaneous: LEA, JMP, JSR, CLR, NEG, NOT, TST, MOVEM, …
-            break
+
+            let eaRawValue = UInt8(truncatingIfNeeded: rawValue & 0b11111)
+            let sourceEaMode = EffectiveAddressMode(sourceEaField: eaRawValue)
+            let destinationRegister = UInt8(truncatingIfNeeded: (rawValue >> 9) & 0b111)
+
+            let op = UInt8(truncatingIfNeeded: rawValue >> 6) & 0b111
+            switch op {
+            case 0b111:
+                self = .lea(sourceEaMode: sourceEaMode, destinationAddressRegister: destinationRegister)
+            case 0b011:
+                assert((rawValue >> 9) & 0b111 == 0b111)
+                self = .jmp(sourceEaMode: sourceEaMode)
+            case 0b010:
+                assert((rawValue >> 9) & 0b111 == 0b111)
+                self = .jsr(sourceEaMode: sourceEaMode)
+            default:
+                preconditionFailure("Unknown op for line 0x4: \(op)")
+            }
         case 0x5:
             // ADDQ / SUBQ / Scc / DBcc
-            break
+            // Bits 11-9 hold immediate data
+            var immediate = UInt8(truncatingIfNeeded: (rawValue >> 9) & 0b111)
+            if immediate == 0 {
+                immediate = 8 // how 8 can be encoded in 3 bits
+            }
+            // Bits 7-6 are size
+            let sizeRawValue: UInt8 = UInt8(truncatingIfNeeded: (rawValue >> 6) & 0b11)
+            // The conventional ordering
+            let size: OperandSize = switch sizeRawValue {
+                case 0b00: .byte
+                case 0b01: .word
+                case 0b10: .long
+                default: fatalError("Invalid line size")
+            }
+
+            // Bits 5-0 are dest EA
+            let destEARawValue = UInt8(truncatingIfNeeded: rawValue) & 0b00011111
+            let destEA = EffectiveAddressMode(destinationEaField: destEARawValue)
+
+            // Bit 8 holds addq vs subq
+            if rawValue & 0b00000000_10000000 == 0 {
+                self = .addq(immediate: immediate, eaMode: destEA)
+            } else {
+                self = .subq(immediate: immediate, eaMode: destEA)
+            }
         case 0x6:
             // Bcc / BSR / BRA
-            break
+            var displacement: Int8? = Int8(truncatingIfNeeded: rawValue)
+            if displacement == 0 {
+                // Signal it's in the next word
+                displacement = nil
+            }
+
+            // Bits 11-8 are the condition code, as are values that select BRA and BSR
+            let conditionCodeRawValue = UInt8(truncatingIfNeeded: (rawValue >> 8) & 0b111)
+            if let conditionCode = ConditionCode(rawValue: conditionCodeRawValue) {
+                // Bits 7-0 are an 8-bit signed displacement
+                //  Note if displacement is 0, then it's taken from the following 16-bit extension word
+                self = .bcc(condition: conditionCode, displacement8: displacement)
+            } else if conditionCodeRawValue == 0b000 {
+                // BRA
+                self = .bra(displacement8: displacement)
+            } else if conditionCodeRawValue == 0b001 {
+                // BSR
+                self = .bsr(displacement8: displacement)
+            } else {
+                preconditionFailure("Invalid condition code: \(conditionCodeRawValue)")
+            }
         case 0x7:
             // MOVEQ
-            break
+            let destDataRegister = UInt8(truncatingIfNeeded: (rawValue >> 9) & 0b111)
+            assert(rawValue & 0b0000010000000000 == 0)
+            let immediate = UInt8(truncatingIfNeeded: rawValue)
+            self = .movq(immediate: immediate, destinationDataRegister: destDataRegister)
         case 0x8:
             // OR / DIVU / DIVS / SBCD
-            break
+            preconditionFailure("Not implemented yet")
         case 0x9:
             // SUB / SUBA / SUBX
-            break
+            preconditionFailure("Not implemented yet")
         case 0xA:
             // Reserved — line-A, unimplemented instruction trap
-            break
+            preconditionFailure("Not implemented yet")
         case 0xB:
             // CMP / CMPA / EOR
-            break
+            preconditionFailure("Not implemented yet")
         case 0xC:
             // AND / MULU / MULS / ABCD / EXG
-            break
+            preconditionFailure("Not implemented yet")
         case 0xD:
             // ADD / ADDA / ADDX
-            break
+            preconditionFailure("Not implemented yet")
         case 0xE:
             // Shift / rotate (ASL, ASR, LSL, LSR, ROL, ROR, …)
-            break
+            preconditionFailure("Not implemented yet")
         case 0xF:
             // Reserved — line-F, coprocessor / unimplemented trap
-            break
+            preconditionFailure("Not implemented yet")
         default:
             fatalError("Invalid line: \(line)")
         }
-
-
-        return nil
     }
 }

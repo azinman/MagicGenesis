@@ -1,0 +1,11 @@
+{
+	"name": "Clear an Operand",
+	"syntax": ["<ea>"],
+	"attributes": {
+		"Ea": "eaModeRegister",
+		"Si": "size_field"
+	},
+	"ccr": "-0100",
+	"format": "01000010SiEa----",
+	"note": "In the MC68000 and MC68008 a memory destination is read before it is cleared."
+}

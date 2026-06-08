@@ -43,7 +43,7 @@ public class E68k: Codable {
     }
 
     public func cycle() {
-        let operationWord = UInt16(truncatingIfNeeded: registers.pc)
+        let operationWord = ram.readUInt16(address: registers.pc)
         registers.pc += 2
 
         let instruction = decode(operationWord: operationWord)
