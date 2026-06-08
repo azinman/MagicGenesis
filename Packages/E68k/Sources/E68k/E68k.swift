@@ -25,12 +25,39 @@ public class E68k: Codable {
         self.ram = ram
         self.memoryCapacity = memoryCapacity
     }
-    
+
+    public func main() {
+        reset()
+
+        while true {
+            cycle()
+        }
+    }
+
     public func reset() {
         registers = Registers()
         registers.ssp = ram.readUInt32(address: 0)
         registers.pc = ram.readUInt32(address: 4)
         registers.supervisorMode = .supervisor
         registers.system.interruptLevel = 7
+    }
+
+    public func cycle() {
+        let operationWord = UInt16(truncatingIfNeeded: registers.pc)
+        registers.pc += 1
+
+        let instruction = decode(operationWord: operationWord)
+        execute(instruction: instruction)
+    }
+
+    func decode(operationWord: UInt16) -> Instruction {
+        guard let opcode = Opcode(rawValue: operationWord) else {
+            preconditionFailure("Invalid opcode: \(operationWord)")
+        }
+        return Instruction(opcode: opcode)
+    }
+
+    func execute(instruction: Instruction) {
+
     }
 }
