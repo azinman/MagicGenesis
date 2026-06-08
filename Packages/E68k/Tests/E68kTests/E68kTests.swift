@@ -49,3 +49,45 @@ func basicMemoryReadWrite() {
     ram.writeInt32(address: 4, value: Int32.min)
     #expect(ram.readInt32(address: 4) == Int32.min)
 }
+
+@Test("CCR convertion to/from byte")
+func ccrConversion() {
+    let ccr = CCR(overflow: true,
+                  zero: true,
+                  negative: true)
+    #expect(ccr.overflow)
+    #expect(ccr.zero)
+    #expect(ccr.negative)
+    #expect(!ccr.carry)
+    #expect(!ccr.extended)
+    #expect(ccr.asByte == 0b00001110)
+
+    #expect(ccr == CCR(fromByte: ccr.asByte))
+}
+
+@Test("System byte convertion to/from byte")
+func systemByteConversion() {
+    let sb = SystemByte(interrupt0: true,
+                        interrupt2: true,
+                        supervisor: true)
+    #expect(sb.interrupt0)
+    #expect(!sb.interrupt1)
+    #expect(sb.interrupt2)
+    #expect(sb.supervisor)
+    #expect(!sb.trace)
+    #expect(sb.asByte == 0b00100101)
+    #expect(sb.asWord == 0b00100101_00000000)
+
+    #expect(sb == SystemByte(fromByte: sb.asByte))
+    #expect(sb == SystemByte(fromWord: sb.asWord))
+}
+
+@Test("Status register converstion to/from word")
+func statusWordConversion() {
+    let r = Registers()
+    let word: UInt16 = 0b10100010_00001010
+    r.status = word
+    #expect(r.status == word)
+    #expect(r.ccr.asByte == 0b00001010)
+    #expect(r.system.asByte == 0b10100010)
+}
